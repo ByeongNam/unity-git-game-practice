@@ -8,6 +8,10 @@ public class Movement : MonoBehaviour
     [SerializeField] float rotationThrust = 100f;
     [Header("Audio Clip")]
     [SerializeField] AudioClip mainEngine;
+    [Header("Particle Effect")]
+    [SerializeField] ParticleSystem mainEngineParticles;
+    [SerializeField] ParticleSystem leftThrustParticles;
+    [SerializeField] ParticleSystem rightThrustParticles;
     Rigidbody rigidBody;
     AudioSource audioSource;
 
@@ -26,24 +30,66 @@ public class Movement : MonoBehaviour
     }
     void ProcessInput()
     {
-        if(Input.GetKey(KeyCode.Space)){
-            rigidBody.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
-            if(!audioSource.isPlaying){
-                audioSource.PlayOneShot(mainEngine);
-            }
+        if(Input.GetKey(KeyCode.Space))
+        {
+            StartThrusting();
         }
-        else{
-            audioSource.Stop();
+        else
+        {
+            StopThrustingState();
         }
     }
     void ProcessRotation(){
         if(Input.GetKey(KeyCode.A))
         {
-            ApplyRotation(-rotationThrust);
+            RotateLeft();
         }
-        else if(Input.GetKey(KeyCode.D)){
-            ApplyRotation(rotationThrust);
+        else if(Input.GetKey(KeyCode.D))
+        {
+            RotateRight();
         }
+        else
+        {
+            StopRotationState();
+        }
+    }
+    void StartThrusting()
+    {
+        rigidBody.AddRelativeForce(Vector3.up * mainThrust * Time.deltaTime);
+        if (!audioSource.isPlaying)
+        {
+            audioSource.PlayOneShot(mainEngine);
+        }
+        if (!mainEngineParticles.isPlaying)
+        {
+            mainEngineParticles.Play(); // 계속 처음부터 play 하기 때문에 particle 이 제대로 나오지 않음
+        }
+    }
+    void StopThrustingState()
+    {
+        audioSource.Stop();
+        mainEngineParticles.Stop();
+    }
+    void RotateLeft()
+    {
+        ApplyRotation(-rotationThrust);
+        if (!rightThrustParticles.isPlaying)
+        {
+            rightThrustParticles.Play();
+        }
+    }
+    void RotateRight()
+    {
+        ApplyRotation(rotationThrust);
+        if (!leftThrustParticles.isPlaying)
+        {
+            leftThrustParticles.Play();
+        }
+    }
+    void StopRotationState()
+    {
+        leftThrustParticles.Stop();
+        rightThrustParticles.Stop();
     }
 
     void ApplyRotation(float rotationThisFrame)
